@@ -4,6 +4,7 @@
             #?@(:cljs [[goog.date.UtcDateTime]
                        [goog.date.Date]
                        [goog.Uri]])
+            [clojure.instant]
             [clojure.set :as set]
             [clojure.edn :as edn]
             [spec-tools.parse :as parse]
@@ -125,18 +126,10 @@
       (catch #?(:clj Exception, :cljs js/Error) _ x))
     x))
 
-#?(:clj
-   (def ^DateTimeFormatter +string->date-format+
-     (-> (DateTimeFormatterBuilder.)
-         (.appendPattern "yyyy-MM-dd['T'HH:mm:ss[.SSS][XXXX][XXXXX]]")
-         (.parseDefaulting ChronoField/HOUR_OF_DAY 0)
-         (.parseDefaulting ChronoField/OFFSET_SECONDS 0)
-         (.toFormatter))))
-
 (defn string->date [_ x]
   (if (string? x)
     (try
-      #?(:clj  (Date/from (Instant/from (.parse +string->date-format+ x)))
+      #?(:clj (clojure.instant/read-instant-date x)
          :cljs (js/Date. (.getTime (goog.date.UtcDateTime.fromIsoString x))))
       (catch #?(:clj Exception, :cljs js/Error) _ x))
     x))
